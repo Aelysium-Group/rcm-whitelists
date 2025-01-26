@@ -1,10 +1,7 @@
-package group.aelysium.rustyconnector.modules.whitelists.configs;
+package group.aelysium.rustyconnector.modules.whitelists;
 
 import group.aelysium.declarative_yaml.DeclarativeYAML;
-import group.aelysium.declarative_yaml.annotations.Comment;
-import group.aelysium.declarative_yaml.annotations.Config;
-import group.aelysium.declarative_yaml.annotations.Node;
-import group.aelysium.declarative_yaml.annotations.PathParameter;
+import group.aelysium.declarative_yaml.annotations.*;
 import group.aelysium.declarative_yaml.lib.Printer;
 import group.aelysium.rustyconnector.modules.whitelists.lib.Whitelist;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Config("plugins/rmc-whitelists/{name}.yml")
+@Namespace("rustyconnector-modules")
+@Config("/rcm-whitelists/{name}.yml")
 @Comment({
         "############################################################",
         "#||||||||||||||||||||||||||||||||||||||||||||||||||||||||||#",
@@ -73,6 +71,7 @@ public class WhitelistConfig {
             "#               ---------------------------                #",
             "#                                                          #",
             "# | A list of usernames to target.                         #",
+            "# | Usernames are not case-sensitive.                      #",
             "#                                                          #",
             "#               ---------------------------                #",
             "#                                                          #",
@@ -162,7 +161,7 @@ public class WhitelistConfig {
     }
 
     public static WhitelistConfig New(@NotNull String name) {
-        return DeclarativeYAML.load(
+        return DeclarativeYAML.From(
                 WhitelistConfig.class,
                 new Printer().pathReplacements(Map.of(
                         "name", name

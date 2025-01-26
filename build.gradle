@@ -1,62 +1,79 @@
-plugins {
-    id 'java'
-    id 'eclipse'
-    id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.8'
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'com.gradleup.shadow:shadow-gradle-plugin:9.0.0-beta4'
+    }
 }
 
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'com.gradleup.shadow'
+
 group = 'group.aelysium'
-version = '0.9.0'
+version = module_version
 
 repositories {
     mavenCentral()
-    maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
-    }
-    maven {
-        name = "sonatype"
-        url = "https://oss.sonatype.org/content/groups/public/"
-    }
-    maven {
-        name = "mrnavastarSnapshots"
-        url = "https://maven.mrnavastar.me/snapshots/"
-    }
-    maven {
-        name = "mrnavastarSnapshots"
-        url = "https://maven.mrnavastar.me/releases/"
-    }
+    maven { url = "https://repo.papermc.io/repository/maven-public/" }
+    maven { url = "https://oss.sonatype.org/content/groups/public/" }
+    maven { url = "https://maven.mrnavastar.me/snapshots/" }
+    maven { url = "https://maven.mrnavastar.me/releases/" }
 }
 
 dependencies {
-    implementation "group.aelysium:rustyconnector-core:0.9.0"
-    implementation "group.aelysium:declarative-yaml:0.1.6"
+//    compileOnly "group.aelysium:rustyconnector-core:0.9.0"
+    compileOnly 'net.kyori:adventure-api:4.17.0'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
 
-    compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
-    annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
+    compileOnly files("./libs/declarative-yaml-0.2.0.jar")
+    compileOnly files("./libs/rustyconnector-core-0.9.0.jar")
 }
 
-def targetJavaVersion = 21
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    withJavadocJar()
+    withSourcesJar()
 }
 
-tasks.withType(JavaCompile).configureEach {
+processResources {
+    def props = ['version': module_version, 'rustyconnector_version': rustyconnector_version]
+    inputs.properties props
+    filteringCharset "UTF-8"
+
+    filesMatching("metadata.json") {
+        expand props
+    }
+    filesMatching("velocity-plugin.json") {
+        expand props
+    }
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+}
+
+javadoc {
     options.encoding = 'UTF-8'
-    options.release.set(targetJavaVersion)
 }
 
-def templateSource = file('src/main/templates')
-def templateDest = layout.buildDirectory.dir('generated/sources/templates')
-def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
-    def props = ['version': project.version]
-    task.inputs.properties props
-
-    task.from templateSource
-    task.into templateDest
-    task.expand props
+shadowJar {
+    archiveBaseName.set(archives_base_name)
+    archiveClassifier.set('')
+    mergeServiceFiles()
+    relocate 'org.reflections', 'group.aelysium.rustyconnector.shaded.org.reflections'
 }
 
-sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })
+tasks.named('jar').configure {
+    enabled = false
+}
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-Xdoclint:none']
+}
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
 
-project.idea.project.settings.taskTriggers.afterSync generateTemplates
-project.eclipse.synchronizationTasks(generateTemplates)
+jar.finalizedBy(shadowJar)

@@ -1,14 +1,17 @@
-package group.aelysium.rustyconnector.modules.whitelists.lib;
+package group.aelysium.rustyconnector.modules.whitelists;
 
-import group.aelysium.ara.Particle;
+import group.aelysium.rustyconnector.shaded.group.aelysium.ara.Particle;
 import group.aelysium.rustyconnector.RC;
 import group.aelysium.rustyconnector.common.lang.Lang;
+import group.aelysium.rustyconnector.modules.whitelists.lib.Whitelist;
+import group.aelysium.rustyconnector.modules.whitelists.lib.WhitelistRegistry;
 import net.kyori.adventure.text.Component;
 
-import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
-import static net.kyori.adventure.text.Component.*;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.newlines;
 import static net.kyori.adventure.text.format.NamedTextColor.BLUE;
 import static net.kyori.adventure.text.format.NamedTextColor.DARK_GRAY;
@@ -22,7 +25,7 @@ public class WhitelistLang {
                 newlines(),
                 RC.Lang("rustyconnector-keyValue").generate("Registered Whitelists", (
                         whitelists.isEmpty() ?
-                                text("There are no registerd whitelists.", DARK_GRAY)
+                                text("There are no registered whitelists.", DARK_GRAY)
                                 :
                                 text(String.join(", ", whitelists.entrySet().stream().map(e -> e.getKey()).toList()), BLUE)
                 ))
@@ -43,16 +46,12 @@ public class WhitelistLang {
                     :
                     text(String.join(", ", whitelist.usernames().stream().toList()), BLUE)
             )),
-            text("UUIDs:", DARK_GRAY),
-            (
-                whitelist.usernames().isEmpty() ?
-                    text("There are no targeted UUIDs.", DARK_GRAY)
+            RC.Lang("rustyconnector-keyValue").generate("UUIDs", (
+                whitelist.uuids().isEmpty() ?
+                    text("There are no targeted uuids.", DARK_GRAY)
                     :
-                    join(
-                            newlines(),
-                            whitelist.uuids().stream().map(u -> text(u.toString(), BLUE)).toList()
-                    )
-            )
+                    text(String.join(", ", whitelist.uuids().stream().map(UUID::toString).toList()), BLUE)
+            ))
         );
     }
 }

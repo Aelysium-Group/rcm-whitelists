@@ -1,4 +1,4 @@
-package group.aelysium.rustyconnector.modules.whitelists.configs;
+package group.aelysium.rustyconnector.modules.whitelists;
 
 import group.aelysium.declarative_yaml.DeclarativeYAML;
 import group.aelysium.declarative_yaml.annotations.*;
@@ -7,8 +7,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
-@Config("plugins/rustyconnector/config.yml")
-public class DefaultConfig {
+@Namespace("rustyconnector")
+@Config("/config.yml")
+class DefaultConfig {
     @Node
     private String proxyWhitelist = null;
 
@@ -20,7 +21,7 @@ public class DefaultConfig {
     public static DefaultConfig ReadFrom() throws IOException {
         DefaultConfig config = new DefaultConfig();
         try {
-            DeclarativeYAML.reload(config, new Printer());
+            DeclarativeYAML.ReadOnly(config, new Printer());
         } catch (Exception ignore) {}
         return config;
     }

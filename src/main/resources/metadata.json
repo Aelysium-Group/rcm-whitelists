@@ -1,0 +1,4 @@
+{
+  "version": "${version}",
+  "rustyconnector_version": "${rustyconnector_version}"
+}

@@ -1,103 +1,105 @@
 package group.aelysium.rustyconnector.modules.whitelists;
 
-import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
-import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
-import com.velocitypowered.api.plugin.Dependency;
-import com.velocitypowered.api.plugin.Plugin;
-import group.aelysium.ara.Particle;
-import group.aelysium.rustyconnector.RC;
-import group.aelysium.rustyconnector.RustyConnector;
+import group.aelysium.rustyconnector.common.RCKernel;
 import group.aelysium.rustyconnector.common.errors.Error;
+import group.aelysium.rustyconnector.proxy.ProxyKernel;
+import group.aelysium.rustyconnector.shaded.com.google.code.gson.gson.Gson;
+import group.aelysium.rustyconnector.shaded.com.google.code.gson.gson.JsonObject;
+import group.aelysium.rustyconnector.shaded.group.aelysium.ara.Particle;
+import group.aelysium.rustyconnector.RC;
 import group.aelysium.rustyconnector.common.events.EventManager;
 import group.aelysium.rustyconnector.common.lang.LangLibrary;
-import group.aelysium.rustyconnector.modules.BuildConstants;
-import group.aelysium.rustyconnector.modules.whitelists.configs.WhitelistConfig;
-import group.aelysium.rustyconnector.modules.whitelists.events.OnFamilyPreConnect;
-import group.aelysium.rustyconnector.modules.whitelists.events.OnProxyPreConnect;
-import group.aelysium.rustyconnector.modules.whitelists.events.OnServerPreConnect;
 import group.aelysium.rustyconnector.modules.whitelists.lib.Whitelist;
-import group.aelysium.rustyconnector.modules.whitelists.lib.WhitelistLang;
 import group.aelysium.rustyconnector.modules.whitelists.lib.WhitelistRegistry;
 import group.aelysium.rustyconnector.proxy.util.Version;
-import net.kyori.adventure.text.Component;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
-@Plugin(
-        id = "rcm-whitelists",
-        name = "rcm-Whitelists",
-        version = BuildConstants.VERSION,
-        description = "A whitelist implementation for RustyConnector Velocity.",
-        url = "https://aelysium.group/",
-        authors = {"Juice"},
-        dependencies = {
-                @Dependency(id = "rustyconnector-velocity")
-        }
-)
-public class RCMWhitelists {
+public class RCMWhitelists implements RC.Plugin.Initializer {
     private static final Particle.Flux<? extends WhitelistRegistry> instance = (new WhitelistRegistry.Tinder()).flux();
     public static Particle.Flux<? extends WhitelistRegistry> fetch() {
         return instance;
     }
+    public final Version rustyconnectorVersion;
 
-    @Subscribe
-    public void onStart(ProxyInitializeEvent event) {
-        try {
-            instance.onStart(r -> {
-                try {
-                    WhitelistConfig.New("default");
-                    for (File file : Objects.requireNonNull((new File("plugins/rcm-whitelists/")).listFiles())) {
-                        if (!(file.getName().endsWith(".yml") || file.getName().endsWith(".yaml"))) continue;
-                        int extensionIndex = file.getName().lastIndexOf(".");
-                        String name = file.getName().substring(0, extensionIndex);
-                        Whitelist.Tinder tinder = WhitelistConfig.New(name).tinder();
-                        Particle.Flux<? extends Whitelist> whitelist = tinder.flux();
+    public RCMWhitelists() {
+        try (InputStream input = this.getClass().getClassLoader().getResourceAsStream("metadata.json")) {
+            if (input == null) throw new NullPointerException("Unable to initialize version number from jar.");
+            Gson gson = new Gson();
+            JsonObject object = gson.fromJson(new String(input.readAllBytes()), JsonObject.class);
+            this.rustyconnectorVersion = new Version(object.get("rustyconnector_version").getAsString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        instance.onStart(w -> {
+            try {
+                WhitelistConfig.New("default");
+                File directory = new File("rc-modules/rcm-whitelists");
+                if(!directory.exists()) directory.mkdirs();
+                for (File file : Optional.ofNullable(directory.listFiles()).orElse(new File[0])) {
+                    if (!(file.getName().endsWith(".yml") || file.getName().endsWith(".yaml"))) continue;
+                    int extensionIndex = file.getName().lastIndexOf(".");
+                    String name = file.getName().substring(0, extensionIndex);
+                    Whitelist.Tinder tinder = WhitelistConfig.New(name).tinder();
+                    Particle.Flux<? extends Whitelist> whitelist = tinder.flux();
+                    try {
                         whitelist.observe();
-                        r.register(whitelist);
+                        w.register(whitelist);
+                    } catch (Exception e) {
+                        RC.Error(Error.from(e).whileAttempting("To startup the RCM-WhitelistRegistry module."));
                     }
-                } catch (Exception e) {
-                    RC.Error(Error.from(e).whileAttempting("To boot up the FamilyRegistry."));
                 }
-            });
-            RustyConnector.Kernel(kernelFlux -> kernelFlux.onStart(kernel -> {
-                if (!kernel.version().equals(Version.create(0, 9, 0)))
-                    RC.Adapter().log(Component.text("Attempting to run "));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
-                try {
-                    instance.observe();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+    @Override
+    public void onStart(RCKernel<?> k) {
+        if(!(k instanceof ProxyKernel kernel)) throw new RuntimeException("RCM-Whitelists must only be run on the proxy.");
 
-                try {
-                    kernel.fetchPlugin("EventManager").onStart(e -> {
-                        ((EventManager) e).listen(OnFamilyPreConnect.class);
-                        ((EventManager) e).listen(OnProxyPreConnect.class);
-                        ((EventManager) e).listen(OnServerPreConnect.class);
-                    });
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        try {
+            //if (kernel.version().equals(Version.create(0, 9, 0)))
 
-                try {
-                    kernel.fetchPlugin("LangLibrary").onStart(lang -> {
-                        ((LangLibrary) lang).registerLangNodes(WhitelistLang.class);
-                    });
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+            try {
+                instance.observe(1, TimeUnit.MINUTES);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 
-                kernel.registerPlugin(instance);
-            }));
+            try {
+                kernel.fetchPlugin("EventManager").onStart(e -> {
+                    ((EventManager) e).listen(OnFamilyPreConnect.class);
+                    ((EventManager) e).listen(OnProxyPreConnect.class);
+                    ((EventManager) e).listen(OnServerPreConnect.class);
+                });
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            try {
+                kernel.fetchPlugin("LangLibrary").onStart(lang -> {
+                    ((LangLibrary) lang).registerLangNodes(WhitelistLang.class);
+                });
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            kernel.registerPlugin(instance);
         } catch (Exception e) {
-            RC.Error(Error.from(e).whileAttempting("To start up the RCM-Whitelists module."));
+            e.printStackTrace();
         }
     }
 
-    @Subscribe
-    public void onClose(ProxyShutdownEvent event) {
+    @Override
+    public void onClose() {
         instance.close();
     }
 }

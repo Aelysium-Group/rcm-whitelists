@@ -1,0 +1,6 @@
+{
+  "main": "group.aelysium.rustyconnector.modules.whitelists.RCMWhitelists",
+  "id": "rcm-whitelists",
+  "dependencies": [],
+  "sharedPackages": []
+}

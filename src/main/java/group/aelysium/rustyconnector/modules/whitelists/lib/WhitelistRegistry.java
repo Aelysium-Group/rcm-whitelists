@@ -1,8 +1,8 @@
 package group.aelysium.rustyconnector.modules.whitelists.lib;
 
-import group.aelysium.ara.Particle;
+import group.aelysium.rustyconnector.RC;
+import group.aelysium.rustyconnector.shaded.group.aelysium.ara.Particle;
 import group.aelysium.rustyconnector.common.plugins.PluginHolder;
-import group.aelysium.rustyconnector.common.plugins.PluginTinder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -74,17 +74,17 @@ public class WhitelistRegistry implements Particle, PluginHolder {
         return Collections.unmodifiableMap(this.whitelists);
     }
 
-    public static class Tinder extends PluginTinder<WhitelistRegistry> {
+    public static class Tinder extends RC.Plugin.Tinder<WhitelistRegistry> {
         public Tinder() {
             super(
-                    "WhitelistRegistry",
+                    "Whitelists",
                     "Provides whitelist functionality for the proxy and families.",
                     "rustyconnector-whitelist-whitelistRegistryDetails"
             );
         }
 
         @Override
-        public @NotNull WhitelistRegistry ignite() throws Exception {
+        public @NotNull WhitelistRegistry ignite() {
             return new WhitelistRegistry();
         }
     }
