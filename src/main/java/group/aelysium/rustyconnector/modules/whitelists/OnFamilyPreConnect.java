@@ -1,5 +1,7 @@
 package group.aelysium.rustyconnector.modules.whitelists;
 
+import group.aelysium.rustyconnector.RC;
+import group.aelysium.rustyconnector.modules.whitelists.lib.WhitelistRegistry;
 import group.aelysium.rustyconnector.shaded.group.aelysium.ara.Particle;
 import group.aelysium.rustyconnector.common.events.EventListener;
 import group.aelysium.rustyconnector.common.events.EventPriority;
@@ -13,7 +15,9 @@ public class OnFamilyPreConnect {
             String name = (String) family.metadata("whitelist").orElse(null);
             if(name == null) return;
 
-            RCMWhitelists.fetch().executeNow(registry -> {
+            RC.Kernel().fetchModule("Whitelists").executeNow(p -> {
+                if(!(p instanceof WhitelistRegistry registry)) return;
+
                 Particle.Flux<? extends Whitelist> flux = registry.fetch(name).orElse(null);
                 if(flux == null) return;
 

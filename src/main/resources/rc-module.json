@@ -1,6 +1,7 @@
 {
-  "main": "group.aelysium.rustyconnector.modules.whitelists.RCMWhitelists",
-  "id": "rcm-whitelists",
-  "dependencies": [],
-  "sharedPackages": []
+  "main": "group.aelysium.rustyconnector.modules.whitelists.lib.WhitelistRegistry$Tinder",
+  "name": "Whitelists",
+  "description": "Provides whitelist functionality for the proxy, families, and servers.",
+  "details": "rustyconnector-whitelist-whitelistRegistryDetails",
+  "dependencies": []
 }

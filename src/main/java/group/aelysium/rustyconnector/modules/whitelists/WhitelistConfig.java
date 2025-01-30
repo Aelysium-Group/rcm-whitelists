@@ -3,6 +3,7 @@ package group.aelysium.rustyconnector.modules.whitelists;
 import group.aelysium.declarative_yaml.DeclarativeYAML;
 import group.aelysium.declarative_yaml.annotations.*;
 import group.aelysium.declarative_yaml.lib.Printer;
+import group.aelysium.rustyconnector.common.modules.ModuleTinder;
 import group.aelysium.rustyconnector.modules.whitelists.lib.Whitelist;
 import org.jetbrains.annotations.NotNull;
 
@@ -142,7 +143,7 @@ public class WhitelistConfig {
     @Node(5)
     private boolean inverted = false;
 
-    public @NotNull Whitelist.Tinder tinder() {
+    public @NotNull ModuleTinder<? extends Whitelist> tinder() {
         Whitelist.Tinder tinder = new Whitelist.Tinder(this.name);
 
         this.uuids.forEach(s -> {
