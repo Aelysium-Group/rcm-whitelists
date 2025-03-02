@@ -1,10 +1,8 @@
 package group.aelysium.rustyconnector.modules.whitelists;
 
-import group.aelysium.rustyconnector.shaded.group.aelysium.ara.Particle;
 import group.aelysium.rustyconnector.RC;
 import group.aelysium.rustyconnector.common.lang.Lang;
-import group.aelysium.rustyconnector.modules.whitelists.lib.Whitelist;
-import group.aelysium.rustyconnector.modules.whitelists.lib.WhitelistRegistry;
+import group.aelysium.rustyconnector.shaded.group.aelysium.ara.Flux;
 import net.kyori.adventure.text.Component;
 
 import java.util.Map;
@@ -19,7 +17,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.DARK_GRAY;
 public class WhitelistLang {
     @Lang("rustyconnector-whitelist-whitelistRegistryDetails")
     public static Component whitelistRegistryDetails(WhitelistRegistry registry) {
-        Map<String, Particle.Flux<? extends Whitelist>> whitelists = registry.whitelists();
+        Map<String, Flux<Whitelist>> whitelists = registry.whitelists();
 
         return join(
                 newlines(),

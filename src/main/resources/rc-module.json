@@ -1,7 +1,8 @@
 {
-  "main": "group.aelysium.rustyconnector.modules.whitelists.lib.WhitelistRegistry$Tinder",
+  "main": "group.aelysium.rustyconnector.modules.whitelists.WhitelistRegistry$Builder",
   "name": "Whitelists",
   "description": "Provides whitelist functionality for the proxy, families, and servers.",
-  "details": "rustyconnector-whitelist-whitelistRegistryDetails",
-  "dependencies": []
+  "environments": [
+    "proxy"
+  ]
 }

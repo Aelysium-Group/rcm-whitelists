@@ -1,15 +1,15 @@
-package group.aelysium.rustyconnector.modules.whitelists;
+package group.aelysium.rustyconnector.modules.whitelists.configs;
 
-import group.aelysium.declarative_yaml.DeclarativeYAML;
-import group.aelysium.declarative_yaml.annotations.*;
-import group.aelysium.declarative_yaml.lib.Printer;
+import group.aelysium.rustyconnector.shaded.group.aelysium.declarative_yaml.DeclarativeYAML;
+import group.aelysium.rustyconnector.shaded.group.aelysium.declarative_yaml.annotations.*;
+import group.aelysium.rustyconnector.shaded.group.aelysium.declarative_yaml.lib.Printer;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
 @Namespace("rustyconnector")
 @Config("/config.yml")
-class DefaultConfig {
+public class DefaultConfig {
     @Node
     private String proxyWhitelist = null;
 

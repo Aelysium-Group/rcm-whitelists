@@ -1,15 +1,12 @@
-package group.aelysium.rustyconnector.modules.whitelists;
+package group.aelysium.rustyconnector.modules.whitelists.configs;
 
-import group.aelysium.declarative_yaml.DeclarativeYAML;
-import group.aelysium.declarative_yaml.annotations.*;
-import group.aelysium.declarative_yaml.lib.Printer;
-import group.aelysium.rustyconnector.common.modules.ModuleTinder;
-import group.aelysium.rustyconnector.modules.whitelists.lib.Whitelist;
+import group.aelysium.rustyconnector.shaded.group.aelysium.declarative_yaml.DeclarativeYAML;
+import group.aelysium.rustyconnector.shaded.group.aelysium.declarative_yaml.annotations.*;
+import group.aelysium.rustyconnector.shaded.group.aelysium.declarative_yaml.lib.Printer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Namespace("rustyconnector-modules")
 @Config("/rcm-whitelists/{name}.yml")
@@ -33,7 +30,7 @@ import java.util.UUID;
 })
 public class WhitelistConfig {
     @PathParameter("name")
-    private String name;
+    public String name;
 
     @Comment({
             "############################################################",
@@ -62,7 +59,7 @@ public class WhitelistConfig {
             "############################################################",
     })
     @Node(1)
-    private List<String> uuids = List.of();
+    public List<String> uuids = List.of();
 
     @Comment({
             "############################################################",
@@ -80,7 +77,7 @@ public class WhitelistConfig {
             "############################################################",
     })
     @Node(2)
-    private List<String> usernames = List.of();
+    public List<String> usernames = List.of();
 
     @Comment({
             "############################################################",
@@ -105,7 +102,7 @@ public class WhitelistConfig {
             "############################################################",
     })
     @Node(3)
-    private boolean usePermission = false;
+    public boolean usePermission = false;
 
     @Comment({
             "############################################################",
@@ -123,7 +120,7 @@ public class WhitelistConfig {
             "############################################################",
     })
     @Node(4)
-    private String kickMessage = "You aren't whitelisted on this server.";
+    public String kickMessage = "You aren't whitelisted on this server.";
 
     @Comment({
             "############################################################",
@@ -141,32 +138,14 @@ public class WhitelistConfig {
             "############################################################",
     })
     @Node(5)
-    private boolean inverted = false;
-
-    public @NotNull ModuleTinder<? extends Whitelist> tinder() {
-        Whitelist.Tinder tinder = new Whitelist.Tinder(this.name);
-
-        this.uuids.forEach(s -> {
-            try {
-                UUID u = UUID.fromString(s);
-                tinder.addUUID(u);
-            } catch (Exception ignore) {}
-        });
-        this.usernames.forEach(tinder::addUsername);
-
-        tinder.kickMessage(this.kickMessage);
-        if(this.inverted) tinder.makeBlacklist();
-        else tinder.makeWhitelist();
-
-        return tinder;
-    }
+    public boolean inverted = false;
 
     public static WhitelistConfig New(@NotNull String name) {
         return DeclarativeYAML.From(
-                WhitelistConfig.class,
-                new Printer().pathReplacements(Map.of(
-                        "name", name
-                ))
+            WhitelistConfig.class,
+            new Printer().pathReplacements(Map.of(
+                "name", name
+            ))
         );
     }
 }
