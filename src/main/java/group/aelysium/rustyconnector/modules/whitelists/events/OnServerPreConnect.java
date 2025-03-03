@@ -19,7 +19,7 @@ public class OnServerPreConnect {
         RC.Kernel().fetchModule("Whitelists").ifPresent(p -> {
             if(!(p instanceof WhitelistRegistry registry)) return;
 
-            Flux<Whitelist> flux = registry.fetch(name).orElse(null);
+            Flux<Whitelist> flux = registry.fetch(name);
             if(flux == null) return;
 
             flux.ifPresent(whitelist -> {

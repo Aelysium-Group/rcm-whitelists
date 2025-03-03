@@ -14,7 +14,7 @@ public class OnProxyPreConnect {
         RC.Kernel().fetchModule("Whitelists").ifPresent(p -> {
             if(!(p instanceof WhitelistRegistry registry)) return;
 
-            Flux<Whitelist> flux = registry.proxyWhitelist().orElse(null);
+            Flux<Whitelist> flux = registry.proxyWhitelist();
             if(flux == null) return;
 
             flux.ifPresent(whitelist -> {
