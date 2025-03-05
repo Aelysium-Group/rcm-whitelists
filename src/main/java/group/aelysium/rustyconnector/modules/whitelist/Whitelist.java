@@ -1,14 +1,20 @@
-package group.aelysium.rustyconnector.modules.whitelists;
+package group.aelysium.rustyconnector.modules.whitelist;
 
+import group.aelysium.rustyconnector.RC;
 import group.aelysium.rustyconnector.common.modules.Module;
 import group.aelysium.rustyconnector.proxy.Permission;
 import group.aelysium.rustyconnector.proxy.player.Player;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.DARK_GRAY;
 
 /**
  * Provides player validation services.
@@ -112,6 +118,14 @@ public class Whitelist implements Module {
     
     @Override
     public @Nullable Component details() {
-        return null;
+        return join(
+            JoinConfiguration.newlines(),
+            RC.Lang("rustyconnector-keyValue").generate("Name", this.name),
+            RC.Lang("rustyconnector-keyValue").generate("Is Blacklist", this.invert),
+            RC.Lang("rustyconnector-keyValue").generate("Deny Message", this.denyMessage),
+            RC.Lang("rustyconnector-keyValue").generate("Bypass Permission", this.permission ? this.permission() : text("Disabled", DARK_GRAY)),
+            RC.Lang("rustyconnector-keyValue").generate("UUIDs", String.join(", ", this.uuids.stream().map(UUID::toString).toList())),
+            RC.Lang("rustyconnector-keyValue").generate("Usernames", String.join(", ", this.usernames.stream().toList()))
+        );
     }
 }

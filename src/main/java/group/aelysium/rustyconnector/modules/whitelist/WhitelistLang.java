@@ -1,4 +1,4 @@
-package group.aelysium.rustyconnector.modules.whitelists;
+package group.aelysium.rustyconnector.modules.whitelist;
 
 import group.aelysium.rustyconnector.RC;
 import group.aelysium.rustyconnector.common.lang.Lang;

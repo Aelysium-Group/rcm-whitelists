@@ -1,10 +1,10 @@
-package group.aelysium.rustyconnector.modules.whitelists.events;
+package group.aelysium.rustyconnector.modules.whitelist.events;
 
 import group.aelysium.rustyconnector.RC;
-import group.aelysium.rustyconnector.modules.whitelists.WhitelistRegistry;
+import group.aelysium.rustyconnector.modules.whitelist.WhitelistRegistry;
 import group.aelysium.rustyconnector.common.events.EventListener;
 import group.aelysium.rustyconnector.common.events.EventPriority;
-import group.aelysium.rustyconnector.modules.whitelists.Whitelist;
+import group.aelysium.rustyconnector.modules.whitelist.Whitelist;
 import group.aelysium.rustyconnector.proxy.events.ServerPreJoinEvent;
 import group.aelysium.rustyconnector.proxy.family.Server;
 import group.aelysium.rustyconnector.shaded.group.aelysium.ara.Flux;

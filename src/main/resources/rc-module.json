@@ -1,6 +1,6 @@
 {
-  "main": "group.aelysium.rustyconnector.modules.whitelists.WhitelistRegistry$Builder",
-  "name": "Whitelists",
+  "main": "group.aelysium.rustyconnector.modules.whitelist.WhitelistRegistry$Builder",
+  "name": "Whitelist",
   "description": "Provides whitelist functionality for the proxy, families, and servers.",
   "environments": [
     "proxy"

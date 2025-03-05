@@ -1,4 +1,4 @@
-package group.aelysium.rustyconnector.modules.whitelists;
+package group.aelysium.rustyconnector.modules.whitelist;
 
 import group.aelysium.rustyconnector.RC;
 import group.aelysium.rustyconnector.common.errors.Error;
@@ -7,58 +7,44 @@ import group.aelysium.rustyconnector.common.lang.LangLibrary;
 import group.aelysium.rustyconnector.common.modules.ExternalModuleBuilder;
 import group.aelysium.rustyconnector.common.modules.Module;
 import group.aelysium.rustyconnector.common.modules.ModuleCollection;
-import group.aelysium.rustyconnector.modules.whitelists.configs.DefaultConfig;
-import group.aelysium.rustyconnector.modules.whitelists.configs.WhitelistConfig;
-import group.aelysium.rustyconnector.modules.whitelists.events.OnFamilyPreConnect;
-import group.aelysium.rustyconnector.modules.whitelists.events.OnProxyPreConnect;
-import group.aelysium.rustyconnector.modules.whitelists.events.OnServerPreConnect;
+import group.aelysium.rustyconnector.modules.whitelist.configs.DefaultConfig;
+import group.aelysium.rustyconnector.modules.whitelist.configs.WhitelistConfig;
+import group.aelysium.rustyconnector.modules.whitelist.events.OnFamilyPreConnect;
+import group.aelysium.rustyconnector.modules.whitelist.events.OnProxyPreConnect;
+import group.aelysium.rustyconnector.modules.whitelist.events.OnServerPreConnect;
 import group.aelysium.rustyconnector.proxy.ProxyKernel;
 import group.aelysium.rustyconnector.common.modules.ModuleHolder;
 import group.aelysium.rustyconnector.shaded.group.aelysium.ara.Flux;
 import group.aelysium.rustyconnector.shaded.group.aelysium.declarative_yaml.DeclarativeYAML;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+
+import static net.kyori.adventure.text.Component.join;
 
 public class WhitelistRegistry implements Module, ModuleHolder<Whitelist> {
     protected final ModuleCollection<Whitelist> whitelists = new ModuleCollection<>();
-    protected final AtomicReference<Flux<Whitelist>> proxyWhitelist = new AtomicReference<>();
-
-    public void assignToProxy(@NotNull Flux<Whitelist> whitelist) throws NoSuchElementException, IllegalArgumentException {
-        String name = whitelist.metadata("name");
-        if(name == null) throw new IllegalArgumentException("The provided flux must have the `name`, `description`, and `details` metadata added.");
-        if(this.whitelists.containsModule(name)) throw new NoSuchElementException("No whitelist with the name "+name+" has been registered.");
-        this.proxyWhitelist.set(whitelist);
+    private final String proxyWhitelist;
+    
+    public WhitelistRegistry(@Nullable String proxyWhitelist) {
+        this.proxyWhitelist = proxyWhitelist;
     }
-
-    public @NotNull Optional<Flux<Whitelist>> proxy() {
-        try {
-            return Optional.ofNullable(this.proxyWhitelist.get());
-        } catch (Exception ignore) {}
-        return Optional.empty();
+    
+    public @Nullable String proxyWhitelist() {
+        return this.proxyWhitelist;
     }
-
-    public void unsetProxy() {
-        this.proxyWhitelist.set(null);
-    }
-
+    
     public void unregister(@NotNull String whitelistName) {
         this.whitelists.unregisterModule(whitelistName);
-        if(this.proxyWhitelist.get() != null && Objects.equals(this.proxyWhitelist.get().metadata("name"), whitelistName))
-            this.proxyWhitelist.set(null);
     }
 
     public void register(@NotNull String name, @NotNull Module.Builder<Whitelist> whitelist) throws Exception {
         this.whitelists.registerModule(name, whitelist);
-    }
-
-    public @Nullable Flux<Whitelist> proxyWhitelist() {
-        return this.proxyWhitelist.get();
     }
 
     public @Nullable Flux<Whitelist> fetch(@NotNull String whitelistName) {
@@ -67,7 +53,6 @@ public class WhitelistRegistry implements Module, ModuleHolder<Whitelist> {
 
     @Override
     public void close() throws Exception {
-        this.proxyWhitelist.set(null);
         this.whitelists.close();
     }
 
@@ -82,12 +67,13 @@ public class WhitelistRegistry implements Module, ModuleHolder<Whitelist> {
     
     @Override
     public @Nullable Component details() {
-        return null;
+        return join(
+            JoinConfiguration.newlines(),
+            RC.Lang("rustyconnector-keyValue").generate("Available Whitelists", String.join(", ", this.whitelists.modules().keySet()))
+        );
     }
     
     public static class Builder extends ExternalModuleBuilder<WhitelistRegistry> {
-        private final List<Module.Builder<Whitelist>> whitelists = new ArrayList<>();
-
         @Override
         public void bind(@NotNull ProxyKernel kernel, @NotNull WhitelistRegistry instance) {
             try {
@@ -112,16 +98,16 @@ public class WhitelistRegistry implements Module, ModuleHolder<Whitelist> {
         @NotNull
         @Override
         public WhitelistRegistry onStart(@NotNull Path dataDirectory) {
-            WhitelistRegistry registry = new WhitelistRegistry();
-            
             try {
-                File directory = new File(DeclarativeYAML.basePath("rustyconnector")+"/rcm-whitelists");
+                WhitelistRegistry registry = new WhitelistRegistry(DefaultConfig.ReadFrom().proxyWhitelist());
+                
+                File directory = new File(DeclarativeYAML.basePath("rustyconnector-modules")+"/rcm-whitelists");
                 if(!directory.exists()) directory.mkdirs();
                 
                 {
                     File[] files = directory.listFiles();
                     if (files == null || files.length == 0)
-                        DefaultConfig.ReadFrom();
+                        WhitelistConfig.New("default");
                 }
                 
                 File[] files = directory.listFiles();
@@ -132,7 +118,7 @@ public class WhitelistRegistry implements Module, ModuleHolder<Whitelist> {
                     if (!(file.getName().endsWith(".yml") || file.getName().endsWith(".yaml"))) continue;
                     int extensionIndex = file.getName().lastIndexOf(".");
                     String name = file.getName().substring(0, extensionIndex);
-                     registry.register(name, new Module.Builder<>("Whitelist", ".") {
+                     registry.register(name, new Module.Builder<>(name, "Provides itemized player connection filtering.") {
                         @Override
                         public Whitelist get() {
                             try {
@@ -153,11 +139,11 @@ public class WhitelistRegistry implements Module, ModuleHolder<Whitelist> {
                         }
                     });
                 }
+                return registry;
             } catch (Exception e) {
-                RC.Error(Error.from(e).whileAttempting("To bind StaticFamilyProvider to the FamilyRegistry."));
+                RC.Error(Error.from(e).whileAttempting("To build the whitelists.").urgent(true));
+                return new WhitelistRegistry(null);
             }
-            
-            return registry;
         }
     }
 }

@@ -1,4 +1,4 @@
-package group.aelysium.rustyconnector.modules.whitelists.configs;
+package group.aelysium.rustyconnector.modules.whitelist.configs;
 
 import group.aelysium.rustyconnector.shaded.group.aelysium.declarative_yaml.DeclarativeYAML;
 import group.aelysium.rustyconnector.shaded.group.aelysium.declarative_yaml.annotations.*;
