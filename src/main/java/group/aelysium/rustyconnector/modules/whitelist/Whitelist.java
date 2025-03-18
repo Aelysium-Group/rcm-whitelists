@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.BLUE;
 import static net.kyori.adventure.text.format.NamedTextColor.DARK_GRAY;
 
 /**
@@ -21,21 +22,21 @@ import static net.kyori.adventure.text.format.NamedTextColor.DARK_GRAY;
  */
 public class Whitelist implements Module {
     private final String name;
-    private final Set<UUID> uuids = ConcurrentHashMap.newKeySet();
+    private final Set<String> ids = ConcurrentHashMap.newKeySet();
     private final Set<String> usernames = ConcurrentHashMap.newKeySet();
     private final boolean permission;
     private final String denyMessage;
     private final boolean invert;
     protected Whitelist(
             @NotNull String name,
-            @NotNull Set<UUID> uuids,
+            @NotNull Set<String> ids,
             @NotNull Set<String> usernames,
             boolean permission,
             boolean inverted,
             @NotNull String denyMessage
     ) {
         this.name = name;
-        this.uuids.addAll(uuids);
+        this.ids.addAll(ids);
         usernames.forEach(s->this.usernames.add(s.toLowerCase()));
         this.permission = permission;
         this.invert = inverted;
@@ -50,10 +51,10 @@ public class Whitelist implements Module {
     }
 
     /**
-     * @return An immutable Set containing the UUIDs targeted by this whitelist.
+     * @return An immutable Set containing the IDs targeted by this whitelist.
      */
-    public @NotNull Set<UUID> uuids() {
-        return Collections.unmodifiableSet(this.uuids);
+    public @NotNull Set<String> uuids() {
+        return Collections.unmodifiableSet(this.ids);
     }
 
     /**
@@ -102,7 +103,7 @@ public class Whitelist implements Module {
     public boolean shouldAllow(@NotNull Player player) {
         boolean shouldAllow = false;
 
-        if(this.uuids.contains(player.uuid())) shouldAllow = true;
+        if(this.ids.contains(player.id())) shouldAllow = true;
         if(this.usernames.contains(player.username().toLowerCase())) shouldAllow = true;
         if(this.permission && Permission.validate(player, this.permission())) shouldAllow = true;
 
@@ -112,7 +113,7 @@ public class Whitelist implements Module {
 
     @Override
     public void close() throws Exception {
-        this.uuids.clear();
+        this.ids.clear();
         this.usernames.clear();
     }
     
@@ -124,8 +125,18 @@ public class Whitelist implements Module {
             RC.Lang("rustyconnector-keyValue").generate("Is Blacklist", this.invert),
             RC.Lang("rustyconnector-keyValue").generate("Deny Message", this.denyMessage),
             RC.Lang("rustyconnector-keyValue").generate("Bypass Permission", this.permission ? this.permission() : text("Disabled", DARK_GRAY)),
-            RC.Lang("rustyconnector-keyValue").generate("UUIDs", String.join(", ", this.uuids.stream().map(UUID::toString).toList())),
-            RC.Lang("rustyconnector-keyValue").generate("Usernames", String.join(", ", this.usernames.stream().toList()))
+            RC.Lang("rustyconnector-keyValue").generate("Usernames", (
+                this.usernames().isEmpty() ?
+                    text("There are no targeted usernames.", DARK_GRAY)
+                    :
+                    text(String.join(", ", this.usernames().stream().toList()), BLUE)
+            )),
+            RC.Lang("rustyconnector-keyValue").generate("IDs", (
+                this.uuids().isEmpty() ?
+                    text("There are no targeted ids.", DARK_GRAY)
+                    :
+                    text(String.join(", ", this.uuids().stream().map(Object::toString).toList()), BLUE)
+            ))
         );
     }
 }

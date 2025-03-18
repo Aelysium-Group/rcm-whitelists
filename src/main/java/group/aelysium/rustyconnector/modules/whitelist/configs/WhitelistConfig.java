@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Namespace("rustyconnector-modules")
 @Config("/rcm-whitelists/{name}.yml")
@@ -35,23 +36,11 @@ public class WhitelistConfig {
     @Comment({
             "############################################################",
             "#||||||||||||||||||||||||||||||||||||||||||||||||||||||||||#",
-            "#                           UUID                           #",
+            "#                            ID                            #",
             "#                                                          #",
             "#               ---------------------------                #",
             "#                                                          #",
-            "# | The players whitelist allows three parameters to give  #",
-            "# | your criteria more or less flexibility!                #",
-            "# | Username, uuid, and IP Address                         #",
-            "#                                                          #",
-            "# NOTE: You'll want to make sure that you use a UUID       #",
-            "#       format containing dashes! If you use the format    #",
-            "#       without dashes the whitelist will fail to load!    #",
-            "#                                                          #",
-            "#       Example:                                           #",
-            "#       00000000-0000-0000-0000-000000000000               #",
-            "#                                                          #",
-            "#       Example (INVALID):                                 #",
-            "#       00000000000000000000000000000000                   #",
+            "# | A list of player IDs to target with the whitelist.     #",
             "#                                                          #",
             "#               ---------------------------                #",
             "#                                                          #",
@@ -59,7 +48,7 @@ public class WhitelistConfig {
             "############################################################",
     })
     @Node(1)
-    public List<String> uuids = List.of();
+    public Set<String> ids = Set.of();
 
     @Comment({
             "############################################################",
@@ -77,7 +66,7 @@ public class WhitelistConfig {
             "############################################################",
     })
     @Node(2)
-    public List<String> usernames = List.of();
+    public Set<String> usernames = Set.of();
 
     @Comment({
             "############################################################",
