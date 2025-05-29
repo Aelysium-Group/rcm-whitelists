@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'group.aelysium.rustyconnector:core:0.9.25'
+    compileOnly 'group.aelysium.rustyconnector:core:0.9.1'
     compileOnly 'net.kyori:adventure-api:4.17.0'
     compileOnly 'org.jetbrains:annotations:24.1.0'
 }
