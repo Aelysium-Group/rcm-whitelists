@@ -4,7 +4,13 @@ A native whitelists module built for RustyConnector.
 
 You can download the jar from the Releases tab.
 
-For API access use
+## Module Installation
+1. Download the jar from the Releases tab.
+2. Make sure you download whatever jar supports your version of RustyConnector.
+3. Copy the jar into the `rc-modules` directory on your Proxy.
+4. Reload the RustyConnector Kernel.
+
+## API Usage
 ```xml
 <repository>
     <id>mrnavastar-releases</id>
@@ -25,4 +31,9 @@ maven {
 }
 
 implementation "group.aelysium.rustyconnector:rcm-whitelists:0.9.1-1"
+```
+
+You can access the Whitelist registry from the RustyConnector Proxy Kernel:
+```java
+WhitelistRegistry registry = RC.Module("Whitelists");
 ```
